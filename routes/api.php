@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/greeting', function () {
     return 'Hello World';
+});
+
+Route::post('/tokens/create', function (Request $request) {
+    $token = $request->user()->createToken('auth_token');
+
+    return ['token' => $token->plainTextToken];
+});
+
+// V1
+Route::prefix('v1')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('token/check', function () {
+            return 'welcome';
+        });
+    });
 });

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EducationController;
+use App\Http\Controllers\ExperienceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,24 @@ Route::prefix('v1')->group(function () {
 
             // Education Delete
             Route::delete('delete', [EducationController::class, 'destroy']);
+        });
+
+        // Experience
+        Route::prefix('experience')->group(function () {
+            // Experience List
+            Route::get('list', [ExperienceController::class, 'index']);
+
+            // Experience Detail
+            Route::get('detail/{id}', [ExperienceController::class, 'show']);
+
+            // Experience Add
+            Route::post('add', [ExperienceController::class, 'store']);
+
+            // Experience Update
+            Route::post('update', [ExperienceController::class, 'update']);
+
+            // Experience Delete
+            Route::delete('delete', [ExperienceController::class, 'destroy']);
         });
     });
 });

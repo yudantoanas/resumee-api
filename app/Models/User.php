@@ -49,4 +49,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Education::class, 'user_id', 'id');
     }
+
+    /**
+     * Get the experiences for the user.
+     */
+    public function experiences()
+    {
+        return $this->hasMany(Experience::class, 'user_id', 'id');
+    }
 }

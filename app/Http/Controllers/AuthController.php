@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -45,8 +46,13 @@ class AuthController extends Controller
         }
 
         $user = User::firstOrCreate(
-            ['name' => $request->name, 'email' => $request->email,],
-            ['password' => bcrypt($request->password)]
+            ['email' => $request->email],
+            [
+                'name' => $request->name,
+                'email_verified_at' => Carbon::now(),
+                'password' => bcrypt($request->password),
+                'remember_token' => Str::random(10)
+            ]
         );
 
         $success['email'] = $user->email;

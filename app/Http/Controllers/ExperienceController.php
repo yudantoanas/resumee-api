@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Education;
+use App\Models\Experience;
 use Carbon\Carbon;
-use Carbon\Traits\Date;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class EducationController extends Controller
+class ExperienceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -30,7 +29,7 @@ class EducationController extends Controller
         // get auth user
         $user = auth()->user();
 
-        $data = $user->educations()->paginate($request->get("per_page", 20));
+        $data = $user->experiences()->paginate($request->get("per_page", 20));
 
         return $this->sendResponse($data);
     }
@@ -43,6 +42,7 @@ class EducationController extends Controller
      */
     public function store(Request $request)
     {
+        $endDate = null;
         //
         $validator = $this->validateForm($request);
 
@@ -54,17 +54,23 @@ class EducationController extends Controller
         $user = auth()->user();
 
         $startDate = Carbon::createFromFormat("Y-m-d", $request->start_date);
-        $endDate = Carbon::createFromFormat("Y-m-d", $request->end_date);
 
-        if ($startDate->gt($endDate)) {
-            return $this->sendError("Invalid Date", "start_date cannot be greater than end_date");
+        if ($request->end_date) {
+            $endDate = Carbon::createFromFormat("Y-m-d", $request->end_date);
+
+            if ($startDate->gt($endDate)) {
+                return $this->sendError("Invalid Date", "start_date cannot be greater than end_date");
+            }
         }
 
-        $data = Education::create([
+        $data = Experience::firstOrCreate([
             'user_id' => $user->id,
-            'institution_name' => $request->institution_name,
-            'degree' => $request->degree,
-            'field_of_study' => $request->field_of_study,
+            'position' => $request->position,
+            'organization_name' => $request->organization_name,
+            'location' => $request->location,
+            'vacancy' => $request->vacancy,
+            'description' => $request->description,
+            'duration' => $request->duration,
             'start_date' => $startDate,
             'end_date' => $endDate,
         ]);
@@ -79,11 +85,14 @@ class EducationController extends Controller
     private function validateForm(Request $request)
     {
         return Validator::make($request->all(), [
-            'institution_name' => 'required',
-            'degree' => 'required',
-            'field_of_study' => 'required',
+            'position' => 'required',
+            'organization_name' => 'required',
+            'location' => 'required',
+            'vacancy' => 'required',
+            'description' => 'required',
+            'duration' => 'required|integer',
             'start_date' => 'required|date_format:Y-m-d',
-            'end_date' => 'required|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d',
         ]);
     }
 
@@ -98,7 +107,7 @@ class EducationController extends Controller
         // get auth user
         $user = auth()->user();
 
-        $data = $user->educations()->where('id', $id)->first();
+        $data = $user->experiences()->where('id', $id)->first();
 
         if (!$data) {
             return $this->sendError("Not Found", "The data you're looking for is not found");
@@ -115,6 +124,7 @@ class EducationController extends Controller
      */
     public function update(Request $request)
     {
+        $endDate = null;
         //
         $validator = $this->validateForm($request);
 
@@ -125,23 +135,29 @@ class EducationController extends Controller
         // get auth user
         $user = auth()->user();
 
-        // get education data based on its id
-        $data = $user->educations()->where('id', $request->id)->first();
+        // get experience data based on its id
+        $data = $user->experiences()->where('id', $request->id)->first();
 
         if (!$data) {
             return $this->sendError("Not Found", "The data you're looking for is not found");
         }
 
         $startDate = Carbon::createFromFormat("Y-m-d", $request->start_date);
-        $endDate = Carbon::createFromFormat("Y-m-d", $request->end_date);
 
-        if ($startDate->gt($endDate)) {
-            return $this->sendError("Invalid Date", "start_date cannot be greater than end_date");
+        if ($request->end_date) {
+            $endDate = Carbon::createFromFormat("Y-m-d", $request->end_date);
+
+            if ($startDate->gt($endDate)) {
+                return $this->sendError("Invalid Date", "start_date cannot be greater than end_date");
+            }
         }
 
-        $data->institution_name = $request->institution_name;
-        $data->degree = $request->degree;
-        $data->field_of_study = $request->field_of_study;
+        $data->position = $request->position;
+        $data->organization_name = $request->organization_name;
+        $data->location = $request->location;
+        $data->vacancy = $request->vacancy;
+        $data->description = $request->description;
+        $data->duration = $request->duration;
         $data->start_date = $startDate;
         $data->end_date = $endDate;
 
@@ -173,8 +189,12 @@ class EducationController extends Controller
         // get auth user
         $user = auth()->user();
 
-        // get education data based on its id
-        $data = $user->educations()->where('id', $request->id)->first();
+        // get experience data based on its id
+        $data = $user->experiences()->where('id', $request->id)->first();
+
+        if (!$data) {
+            return $this->sendError("Not Found", "The data you're looking for is not found");
+        }
 
         $data->delete();
 
